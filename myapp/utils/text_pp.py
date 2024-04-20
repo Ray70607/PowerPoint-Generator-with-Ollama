@@ -7,29 +7,28 @@ from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.util import Inches
 from urllib.parse import quote_plus
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
 
 dir_path = 'static/presentations'
 
-load_dotenv()
-API_KEY = os.getenv('PEXELS_API_KEY')
+API_KEY = "FJohztsPpKiWoPBgirlGDsm8EeORi5rJwaCKtbQy64qIoUT2pDkrdnCc"
 
 def parse_response(response):
     slides = response.split('\n\n')
     slides_content = []
-    for slide in slides:
+    for slide in slides[1:len(slides)]:
         lines = slide.split('\n')
         title_line = lines[0]
-        if ': ' in title_line:
-            title = title_line.split(': ', 1)[1]  # Extract the title after 'Slide X: '
-        else:
+        try:
+            title = title_line.split('"')[1]  # Extract the title after 'Slide X: '
+        except:
             title = title_line
-        content_lines = [line for line in lines[1:] if line != 'Content:']  # Skip line if it is 'Content:'
-        content = '\n'.join(content_lines)  # Join the lines to form the content
+        try:
+            content_lines = lines[1].split('"')[1]  # Skip line if it is 'Content:'
+        except:
+            content_lines=lines.join('').split('Content:')[1]
         # Extract the keyword from the line that starts with 'Keyword:'
-        keyword_line = [line for line in lines if 'Keyword:' or 'Keywords:' in line][0]
-        keyword = keyword_line.split(': ', 1)[1]
-        slides_content.append({'title': title, 'content': content, 'keyword': keyword})
+        slides_content.append({'title': title, 'content': content_lines})
     return slides_content
 
 
@@ -108,7 +107,7 @@ def create_ppt(slides_content, template_choice, presentation_title, presenter_na
                         for run in paragraph.runs:
                             run.font.name = 'Times New Roman'
                             run.font.color.rgb = RGBColor(255, 255, 255)  # RGB for white color
-
+        insert_image=0
         if insert_image:
             # fetch image URL from Pixabay based on the slide's title
             image_url = search_pexels_images(slide_content['keyword'])
@@ -130,55 +129,9 @@ def create_ppt(slides_content, template_choice, presentation_title, presenter_na
 
                 slide.shapes.add_picture(image_stream, left, top, width=image_width, height=image_height)
 
-    # add credits slide
-    slide = prs.slides.add_slide(content_slide_layout)
-    if template_choice == 'dark_modern':
-        for placeholder in slide.placeholders:
-            if placeholder.placeholder_format.type == 1:  # Title
-                placeholder.text = "Credits"
-                for paragraph in placeholder.text_frame.paragraphs:
-                    for run in paragraph.runs:
-                        run.font.name = 'Times New Roman'
-                        run.font.color.rgb = RGBColor(255, 165, 0)
-            elif placeholder.placeholder_format.type == 7:  # Content
-                placeholder.text = "Images provided by Pexels: https://www.pexels.com"
-                for paragraph in placeholder.text_frame.paragraphs:
-                    for run in paragraph.runs:
-                        run.font.name = 'Times New Roman'
-                        run.font.color.rgb = RGBColor(255, 255, 255)
-
-    elif template_choice == 'bright_modern':
-        for placeholder in slide.placeholders:
-            if placeholder.placeholder_format.type == 1:  # Title
-                placeholder.text = "Credits"
-                for paragraph in placeholder.text_frame.paragraphs:
-                    for run in paragraph.runs:
-                        run.font.name = 'Arial'
-                        run.font.color.rgb = RGBColor(255, 20, 147)
-            elif placeholder.placeholder_format.type == 7:  # Content
-                placeholder.text = "Images provided by Pexels: https://www.pexels.com"
-                for paragraph in placeholder.text_frame.paragraphs:
-                    for run in paragraph.runs:
-                        run.font.name = 'Arial'
-                        run.font.color.rgb = RGBColor(0, 0, 0)
-
-    else:
-        for placeholder in slide.placeholders:
-            if placeholder.placeholder_format.type == 1:  # Title
-                placeholder.text = "Credits"
-                for paragraph in placeholder.text_frame.paragraphs:
-                    for run in paragraph.runs:
-                        run.font.name = 'Arial'
-                        run.font.color.rgb = RGBColor(0, 0, 0)
-            elif placeholder.placeholder_format.type == 7:  # Content
-                placeholder.text = "Images provided by Pexels: https://www.pexels.com"
-                for paragraph in placeholder.text_frame.paragraphs:
-                    for run in paragraph.runs:
-                        run.font.name = 'Arial'
-                        run.font.color.rgb = RGBColor(0, 0, 0)
-
-    # Delete the first two slides after all new slides have been added
     delete_first_two_slides(prs)
 
     # Save the presentation
-    prs.save(os.path.join('generated', 'generated_presentation.pptx'))
+    prs.save('generated_presentation.pptx')
+
+

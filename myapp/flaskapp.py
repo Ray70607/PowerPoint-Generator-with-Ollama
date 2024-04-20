@@ -10,7 +10,7 @@ from utils.gpt_generate import chat_development
 from utils.text_pp import parse_response, create_ppt
 from dotenv import load_dotenv
 
-load_dotenv()  # This loads the .env file
+#load_dotenv()  # This loads the .env file
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
