@@ -28,7 +28,7 @@ def build_conversation(user_message):
 
 
 def generate_assistant_message(conversation):
-    client = Client(host='http://192.168.3.91:11434')
+    client = Client(host='http://localhost:11434')
     response = client.chat(
         model="llama2",
         messages=conversation
